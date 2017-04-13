@@ -1,0 +1,2 @@
+class NotYetCachedError(Exception):
+    pass
