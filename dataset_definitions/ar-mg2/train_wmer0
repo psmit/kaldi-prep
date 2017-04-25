@@ -1,0 +1,3 @@
+^.*$
+utt2set ^train$
+utt2wmer == 0.0

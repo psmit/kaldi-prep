@@ -1,10 +1,9 @@
 # coding=utf-8
 from __future__ import print_function
 import locale
-locale.setlocale(locale.LC_ALL, 'C')
 
 from lib.corpus import Corpus
-from lib.selector import RegexSelector
+from lib.selector import AllSelector
 
 from codecs import decode
 import io
@@ -14,11 +13,13 @@ from os.path import join, splitext, exists
 
 from subprocess import check_output
 
+locale.setlocale(locale.LC_ALL, 'C')
+
 def asciify(s):
     return s.replace(u"Ö", u"Oe").replace(u"Ä", u"Ae").replace(u"Å", u"Aa").replace(u"ö", u"oe").replace(u"ä", u"ae")
 
 
-class TalkoCorpus(Corpus,RegexSelector):
+class TalkoCorpus(Corpus,AllSelector):
     def __init__(self):
         super(TalkoCorpus, self).__init__()
         self.name = "talko"
@@ -56,7 +57,7 @@ class TalkoCorpus(Corpus,RegexSelector):
 
                     n += 1
 
-                    utt = u"{}-{:03}-{:04d}".format(spk, sn, n)
+                    utt = u"{}-{}-{}-{:03}-{:04d}".format(self.lang, self.code, spk, sn, n)
                     print(utt)
                     wav[utt] = parts[0]
                     speaker[utt] = spk
@@ -79,13 +80,13 @@ class TalkoCorpus(Corpus,RegexSelector):
 
                     n += 1
 
-                    utt = u"{}-{:03}-{:04d}".format(spk, sn, n)
+                    utt = u"{}-{}-{}-{:03}-{:04d}".format(self.lang, self.code, spk, sn, n)
                     print(utt)
                     ort[utt] = parts[6]
 
         with io.open(join(target_dir, 'wav.scp'), 'w', encoding='utf-8') as of:
             for k in sorted(wav_files.keys(), key=locale.strxfrm):
-                print(u"{} sox {} -r 16k - remix - |".format(k, wav_files[k]), file=of)
+                print(u"{} sox {} -r 16k -t wav - remix - |".format(k, wav_files[k]), file=of)
 
         with io.open(join(target_dir, 'segments'), 'w', encoding='utf-8') as of:
             for k in sorted(wav.keys(), key=locale.strxfrm):
