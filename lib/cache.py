@@ -30,11 +30,13 @@ def make_cache(source, target):
         if f == 'wav.scp' or isdir(f):
             continue
 
+        print(f)
         m = {}
         for line in io.open(join(source, f), encoding='utf-8'):
-            if len(line.strip()) > 0:
-                k, v = line.strip().split(None, 1)
-                m[k] = v
+            parts = line.strip().split(None, 1)
+            k = parts[0]
+            v = "" if len(parts) < 2 else parts[1]
+            m[k] = v
         with io.open(join(target, 'all', f), 'w', encoding='utf-8') as of:
             for k in sorted(m.keys(), key=locale.strxfrm):
                 print(u"{} {}".format(k, m[k]), file=of)
