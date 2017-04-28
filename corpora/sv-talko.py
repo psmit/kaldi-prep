@@ -60,7 +60,7 @@ class TalkoCorpus(Corpus,AllSelector):
                     utt = u"{}-{}-{}-{:03}-{:04d}".format(self.lang, self.code, spk, sn, n)
                     print(utt)
                     wav[utt] = parts[0]
-                    speaker[utt] = spk
+                    speaker[utt] = u"{}-{}-{}".format(self.lang, self.code, spk)
                     time[utt] = (float(parts[3]), float(parts[4]))
                     trans[utt] = parts[6]
 
@@ -96,3 +96,4 @@ class TalkoCorpus(Corpus,AllSelector):
             with io.open(join(target_dir, file), 'w', encoding='utf-8') as of:
                 for k in sorted(wav.keys(), key=locale.strxfrm):
                     print(u"{} {}".format(k, vars()[v][k]), file=of)
+

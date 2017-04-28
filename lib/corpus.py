@@ -1,6 +1,8 @@
+from __future__ import print_function
 from os.path import join, exists, isdir
-from os import listdir, makedirs
+from os import listdir, makedirs, rename
 
+from io import open
 
 class Corpus(object):
     def __init__(self):
@@ -39,5 +41,26 @@ class Corpus(object):
 
     def make_base_dir(self, paths, target_dir):
         raise NotImplementedError
+
+    def normalize(self, text):
+        text = text.lower()
+
+        words = text.split()
+        output = []
+        for word in words:
+            if not word.startswith(u"#"):
+                output.append(word.strip(u".,!:?"))
+        return " ".join(output)
+
+    def normalize_text_file(self, textfile):
+        rename(textfile, "{}.unnormalized".format(textfile))
+        with open(textfile, 'w', encoding='utf-8') as of:
+            for line in open("{}.unnormalized".format(textfile), encoding='utf-8'):
+                parts = line.strip().split(None, 1)
+                k = parts[0]
+                text = ""
+                if len(parts) > 1:
+                    text = self.normalize(parts[1])
+                print(u"{} {}".format(k, text.strip()), file=of)
 
 

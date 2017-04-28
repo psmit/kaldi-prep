@@ -25,7 +25,7 @@ class ArabicMgb2016Corpus(Corpus, AdvancedRegexSelector):
 
 
     def make_base_dir(self, paths, target_dir):
-        in_dir = join(paths['TEAMWORK'], 'c', 'talko', 'mgb','2017','arabic','data')
+        in_dir = join(paths['TEAMWORK'], 'c', 'mgb','2017','arabic','data')
 
         maps = {'segments': 'segment',
                 'text': 'words',
@@ -54,7 +54,7 @@ class ArabicMgb2016Corpus(Corpus, AdvancedRegexSelector):
                 xml = join(in_dir, 'xml', d, x)
                 wav_file = join(in_dir,'wav', d, "{}.wav".format(splitext(x)[0]))
                 basename = splitext(x)[0]
-                wav_name = "{}-{}-{}".format(self.lang, self.code, basename)
+                wav_name = u"{}-{}-{}".format(self.lang, self.code, basename)
                 wav_map[wav_name] = wav_file
 
                 for line in check_output(['xmlstarlet',
@@ -62,7 +62,7 @@ class ArabicMgb2016Corpus(Corpus, AdvancedRegexSelector):
                                           '//segments',
                                           '-m', "segment", '-n', '-v',
                                           "concat(@who,' ',@starttime,' ',@endtime,' ',@AWD,' ',@WMER,' ',@PMER,' ')",
-                                          '-m', "element", '-v', "concat(text(),' ')", xml]).splitlines():
+                                          '-m', "element", '-v', "concat(text(),' ')", xml]).decode('utf-8').splitlines():
                     m = match(r'\w+speaker(\d+)\w+\s+(.*)', line)
                     if m:
                         spk = int(m.group(1))
@@ -75,13 +75,15 @@ class ArabicMgb2016Corpus(Corpus, AdvancedRegexSelector):
                         wmer = float(t[4])
 
                         s = [unescape(w) for w in t[5:]]
-                        words = ' '.join(s)
+                        #print(s)
+                        #print(x)
+                        words = u' '.join(s)
 
-                        utterance_id = "{}-{}-{}-{:04d}_seg-{:07d}-{:07d}".format(self.lang, self.code, basename, spk, start*100, end*100)
-                        utt_map[(basename, "{:07d}".format(start*100),"{:07d}".format(end*100))] = utterance_id
-                        speaker_id = "{}-{}-{}-{:04d}".format(self.lang, self.code, basename, spk)
-                        segment = "{} {} {}".format(wav_name, start, end)
-                        sel = sel_map.get("{}_spk-{:04d}_seg-{:07d}:{:07d}".format(basename, spk, start*100, end*100), 'other')
+                        utterance_id = u"{}-{}-{}-{:04d}_seg-{:07d}-{:07d}".format(self.lang, self.code, basename, spk, int(start*100), int(end*100))
+                        utt_map[(basename, u"{:07d}".format(int(start*100)),"{:07d}".format(int(end*100)))] = utterance_id
+                        speaker_id = u"{}-{}-{}-{:04d}".format(self.lang, self.code, basename, spk)
+                        segment = u"{} {} {}".format(wav_name, start, end)
+                        sel = sel_map.get(u"{}_spk-{:04d}_seg-{:07d}:{:07d}".format(basename, spk, int(start*100), int(end*100)), 'other')
 
 
                         for k, v in maps.items():
@@ -90,9 +92,9 @@ class ArabicMgb2016Corpus(Corpus, AdvancedRegexSelector):
 
                 data = loadXml(xml)
                 for e in data['turn']:
-                    print("{} 0 UNKNOWN {:.02f} {:.02f} {}".format(utt_map[(data['id'], "{:07d}".format(e.startTime*100), "{:07d}".format(e.endTime*100))], e.startTime, e.endTime, e.text), file=stm)
+                    print(u"{} 0 UNKNOWN {:.02f} {:.02f} {}".format(utt_map[(data['id'], "{:07d}".format(int(e.startTime*100)), "{:07d}".format(int(e.endTime*100)))], e.startTime, e.endTime, e.text), file=stm)
 
         stm.close()
         with open(join(target_dir, 'wav.scp'), 'w', encoding='utf-8') as wav_file:
             for k, v in wav_map.items():
-                print("{} {}".format(k,v), file=wav_file)
+                print(u"{} {}".format(k,v), file=wav_file)

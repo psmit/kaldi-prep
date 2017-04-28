@@ -19,7 +19,7 @@ def _remove_write_permissions(path):
     remove_write = ~S_IWUSR & ~S_IWOTH &  ~S_IWGRP
     for root, dirs, files in walk(path, False):
         for p in chain(dirs, files):
-            chmod(p, S_IMODE(lstat(p).st_mode) & remove_write)
+            chmod(join(root,p), S_IMODE(lstat(join(root,p)).st_mode) & remove_write)
 
 
 def make_cache(source, target):
@@ -27,7 +27,7 @@ def make_cache(source, target):
     makedirs(join(target, 'all'))
 
     for f in listdir(source):
-        if f == 'wav.scp' or isdir(f):
+        if f == 'wav.scp' or isdir(join(source,f)):
             continue
 
         print(f)
@@ -86,14 +86,14 @@ def make_cache(source, target):
             check_call(['steps/make_mfcc.sh',
                         '--mfcc-config', 'conf/{}.conf'.format(conf),
                         '--nj', str(nj),
-                        '--cmd', 'run.pl --max-jobs-run 1',
+                        '--cmd', 'slurm.pl --mem 2G',
                         tmpdir])
 
             check_call(['copy-feats',
-                        '--write-num-frames=ark,t:{cache_dir}/{ddir}/utt2numframes.{conf}'.format(**locals()),
+                        '--write-num-frames=ark,t:{target}/{ddir}/utt2numframes.{conf}'.format(**locals()),
                         '--compress=true',
                         'scp:{}/feats.scp'.format(tmpdir),
-                        'ark,scp:{cache_dir}/data/{ddir}_{conf}.ark,{cache_dir}/{ddir}/{conf}.scp'.format(**locals())])
+                        'ark,scp:{target}/data/{ddir}_{conf}.ark,{target}/{ddir}/{conf}.scp'.format(**locals())])
             rmtree(tmpdir)
 
     _remove_write_permissions(target)

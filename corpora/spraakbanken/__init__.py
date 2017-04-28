@@ -41,7 +41,7 @@ def prep_corpus(prefix, source_dir, target_dir):
                 key = parts[-1] + splitext(f)[0]
                 spl_files[key.lower()] = join(root, f)
 
-    fd_text = open(join(target_dir, 'text.orig'), 'w', encoding='utf-8')
+    fd_text = open(join(target_dir, 'text'), 'w', encoding='utf-8')
     fd_scp = open(join(target_dir, 'wav.scp'), 'w', encoding='utf-8')
     fd_utt2spk = open(join(target_dir, 'utt2spk'), 'w', encoding='utf-8')
     fd_utt2type = open(join(target_dir, 'utt2type'), 'w', encoding='utf-8')
@@ -79,12 +79,12 @@ def prep_corpus(prefix, source_dir, target_dir):
                 continue
 
             for channel in ("1", "2"):
-                utt_key = "{}-{}-{}-ch{}-{}".format(prefix, key[:8], spl_wav_filename[1:5], channel, spl_wav_filename[5:])
+                utt_key = u"{}-{}-{}-ch{}-{}".format(prefix, key[:8], spl_wav_filename[1:5], channel, spl_wav_filename[5:])
 
-                print("{} sph2pipe -f wav -p -c {} {} |".format(utt_key, channel, file_name), file=fd_scp)
-                print("{} {}".format(utt_key, utt_text), file=fd_text)
-                print("{} {}".format(utt_key, utt_key[:21]), file=fd_utt2spk)
-                print("{} {}".format(utt_key, utt_type), file=fd_utt2type)
+                print(u"{} sph2pipe -f wav -p -c {} {} |".format(utt_key, channel, file_name), file=fd_scp)
+                print(u"{} {}".format(utt_key, utt_text), file=fd_text)
+                print(u"{} {}".format(utt_key, utt_key[:21]), file=fd_utt2spk)
+                print(u"{} {}".format(utt_key, utt_type), file=fd_utt2type)
 
     for type, count in err_counter.most_common():
         print("{} errors of type \"{}\" occured".format(count, type), file=sys.stderr)

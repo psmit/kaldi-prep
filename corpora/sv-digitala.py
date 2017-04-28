@@ -1,8 +1,9 @@
+# coding=utf-8
 from __future__ import print_function
 
 from itertools import chain
 from os.path import join, splitext, isfile
-from os import walk, listdir
+from os import walk, listdir, stat
 
 from lib.corpus import Corpus
 from lib.selector import RegexSelector
@@ -37,7 +38,7 @@ class DigitalaCorpus(Corpus, RegexSelector):
                 dirs.remove('test')
 
             for file in files:
-                if file.endswith('.wav'):
+                if file.endswith('.wav') and stat(join(root, file)).st_size > 1000:
                     wav_files[splitext(file)[0]] = join(root, file)
 
         transcriptions1001 = {}
@@ -124,6 +125,19 @@ class DigitalaCorpus(Corpus, RegexSelector):
             print(u"{}-{}-{} sox {} -r 16k -t wav - remix - |".format(self.lang, self.code, k, wav_files[k]), file=wavscp)
             print(u"{}-{}-{} {}".format(self.lang, self.code, k, sets[k]), file=utt2set)
             print(u"{}-{}-{} {}".format(self.lang, self.code, k, '-'.join(k.split('-')[:2])), file=utt2spk)
+
+    def normalize(self, text):
+        text = text.lower()
+        text = text.replace(u"28b", u"tjugoåtta bee")
+        text = text.replace(u"7,3 %", u"sju komma tre procent")
+        text = text.replace(u"9.4.2015.", u"den nionde april tjugohundrafemton")
+
+        words = text.split()
+        output = []
+        for word in words:
+            if not word.startswith(u"#"):
+                output.append(word.strip(u".,!:?"))
+        return " ".join(output)
 
 
 

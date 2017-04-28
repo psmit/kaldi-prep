@@ -7,7 +7,7 @@ import os
 import sys
 
 
-from os.path import join, realpath, abspath, dirname
+from os.path import join, realpath, abspath, dirname, normpath, exists
 from os import chdir
 from shutil import rmtree
 from subprocess import check_call
@@ -29,6 +29,8 @@ def get_status(args):
     print("Status")
     for cls in Corpus.__subclasses__():
         print("{}".format(cls()))
+        for dataset in cls().list_datasets():
+            print("  {}".format(dataset))
 
 
 def create_cache(args):
@@ -42,22 +44,24 @@ def create_cache(args):
     rmtree(tmp)
 
 
-def dataset(args):
+def get(args):
     print("Dataset")
     c = corpus_map[args.corpus.lower()]
     c.get_dataset(args.dataset, args.targetdir, 'mfcc_hires' if args.hires else 'mfcc', '_vp_sp' if args.perturbed else '')
+    if args.normalize and exists(join(args.targetdir, 'text')):
+        c.normalize_text_file(join(args.targetdir, 'text'))
     if args.cmvn:
         check_call(['steps/compute_cmvn_stats.sh', args.targetdir])
-
+    
 
 def show(args):
     print("Cache")
 
 
-def get(args):
-    c = corpus_map[args.corpus.lower()]
+#def get(args):
+#    c = corpus_map[args.corpus.lower()]
 
-    print("Dataset")
+#    print("Dataset")
 
 
 def _set_path():
@@ -69,6 +73,7 @@ def _set_path():
 
 
 def main():
+    cur_dir = os.getcwd()
     _set_path()
     # create the top-level parser
     parser = argparse.ArgumentParser()
@@ -84,13 +89,16 @@ def main():
     parser_get = subparsers.add_parser('get')
     parser_get.add_argument('--perturbed', action='store_true')
     parser_get.add_argument('--hires', action='store_true')
-    parser_get.add_argument('--cmvn', action='store_true')
+    parser_get.add_argument('--no-cmvn', dest='cmvn', action='store_false')
+    parser_get.add_argument('--no-normalize', dest='normalize', action='store_false')
     parser_get.add_argument('corpus')
     parser_get.add_argument('dataset')
     parser_get.add_argument('targetdir')
     parser_get.set_defaults(func=get)
 
     args = parser.parse_args()
+    if hasattr(args, 'targetdir'):
+        args.targetdir = normpath(join(cur_dir,args.targetdir))
     args.func(args)
 
 

@@ -43,10 +43,6 @@ class SpeeconCorpus(Corpus,RegexSelector):
             for f in files:
                 if f.endswith(".FIO"):
                     FIO_files[f[:8]] = join(root, splitext(f)[0])
-                if len(FIO_files) > 20:
-                    break
-            if len(FIO_files) > 20:
-                break
 
         maps = {'wav.scp': 'wav',
                 'text.ort1': 'ort1',
